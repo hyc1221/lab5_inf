@@ -17,7 +17,7 @@ namespace lab5
         double[] b, s;
         double[,] s_c;
         double[,] binary;
-        int k = 9, countb;
+        int k = 9, countb, countmis, ind_mis = -1;
         Random rand = new Random();
 
         private void button1_Click(object sender, EventArgs e)
@@ -26,9 +26,13 @@ namespace lab5
             Output_code();
             Calc_code_h();
             Calc_code_h2();
+            Calc_mistake();
+            Calc_s();
             Output_s_c();
             Output_b();
             Output_code_h();
+            Output_mis();
+            Output_s();
         }
 
         void Calc_code()
@@ -59,9 +63,9 @@ namespace lab5
                 }  
             }
 
-            s_c = new double[countb + 1, x];
-            for (int i = 0; i < countb; i++)
-                for (int j = 0; j < x; j++) s_c[i, j] = -1;
+            s_c = new double[countb + 1, x + 1];
+            for (int i = 0; i <= countb; i++)
+                for (int j = 0; j <= x; j++) s_c[i, j] = -1;
 
             for (int i = 0; i < countb; i++)
             {
@@ -108,11 +112,11 @@ namespace lab5
         void Calc_code_h2()
         {
             code_h2 = new double[k + countb + 1];
-            for (int i = 0; i < k + countb; i++)
+            for (int i = 0; i <= k + countb; i++)
             {
-                code_h2[i] = code_h[i];
+                if (i < k + countb) code_h2[i] = code_h[i];
                 s_c[countb, i] = 1;
-                b[countb] += code_h[i];
+                if (i < k + countb) b[countb] += code_h[i];
             }
             if (b[countb] % 2 != 0) b[countb] = 1;
             else b[countb] = 0;
@@ -126,9 +130,48 @@ namespace lab5
             int mis_count = rand.Next(3);
             for (int i = 0; i < mis_count; i++)
             {
-                int mis_ind = rand.Next(k + countb + 2);
+                int mis_ind = rand.Next(k + countb + 1);
                 if (mis[mis_ind] == 1) mis[mis_ind] = 0;
                 else mis[mis_ind] = 1;
+            }
+        }
+
+        void Calc_s()
+        {
+            ind_mis = 0;
+            countmis = 0;
+            s = new double[countb + 1];
+            for (int i = 0; i < countb; i++)
+            {
+                for (int j = 0; j < k + countb; j++)
+                    if (s_c[i, j] == 1) s[i] += mis[j];
+                if (s[i] % 2 != 0) s[i] = 1;
+                else s[i] = 0;
+            }
+            for (int j = 0; j <= k + countb; j++) s[countb] += mis[j];
+            if (s[countb] % 2 != 0) s[countb] = 1;
+            else s[countb] = 0;
+
+            if (s[countb] == 0)
+            {
+                double g = 0;
+                for (int i = 0; i < countb; i++) g += s[i];
+                if (g > 0) countmis = 2;
+                else countmis = 0;
+             }
+            if (s[countb] == 1)
+            {
+                countmis = 1;
+                for (int i = 0; i < countb; i++)
+                {
+                    ind_mis += Convert.ToInt32(s[i] * Math.Pow(2, i));
+                }
+                if (ind_mis == 0)
+                {
+                    countmis = 0;
+                    ind_mis = -1;
+                }
+                else ind_mis--;
             }
         }
 
@@ -178,6 +221,26 @@ namespace lab5
             }
             richTextBox1.AppendText(" - код Хэмминга для одной ошибки\n");
             richTextBox2.AppendText(" - код Хэмминга для двух ошибок\n");
+        }
+
+        void Output_mis()
+        {
+            for (int i = 0; i < k + countb + 1; i++) richTextBox3.AppendText(code_h2[i].ToString());
+            richTextBox3.AppendText(" - код Хэмминга\n");
+            for (int i = 0; i < k + countb + 1; i++) richTextBox3.AppendText(mis[i].ToString());
+            richTextBox3.AppendText(" - код с ошибками (возможно)\n");
+        }
+
+        void Output_s()
+        {
+            for (int i = 0; i <= countb; i++)
+                richTextBox3.AppendText("\nS[" + (i + 1) + "] = " + s[i].ToString());
+            richTextBox3.AppendText("\n\n");
+            for (int i = 0; i <= countb; i++)
+                richTextBox3.AppendText(s[i].ToString());
+            richTextBox3.AppendText(" - контрольная сумма\n\n");
+            richTextBox3.AppendText("Количество ошибок - " + countmis.ToString() + "\n");
+            if (countmis == 1) richTextBox3.AppendText("Позиция ошибки - " + (ind_mis + 1).ToString());
         }
 
         public Form1()
