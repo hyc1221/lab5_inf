@@ -13,11 +13,11 @@ namespace lab5
     public partial class Form1 : Form
     {
 
-        double[] code, code_h;
+        double[] code, code_h, code_h2, mis;
         double[] b, s;
         double[,] s_c;
         double[,] binary;
-        int k =9, countb;
+        int k = 9, countb;
         Random rand = new Random();
 
         private void button1_Click(object sender, EventArgs e)
@@ -25,7 +25,9 @@ namespace lab5
             Calc_code();
             Output_code();
             Calc_code_h();
+            Calc_code_h2();
             Output_s_c();
+            Output_b();
             Output_code_h();
         }
 
@@ -38,11 +40,8 @@ namespace lab5
         void Calc_code_h()
         {
             countb = 0;
-            int p = 0;
-            
-            while (Math.Pow(2, p) < k)
+            while (Math.Pow(2, countb) < k)
             {
-                p++;
                 countb++;
             }
             int x = k + countb;
@@ -60,7 +59,7 @@ namespace lab5
                 }  
             }
 
-            s_c = new double[countb, x];
+            s_c = new double[countb + 1, x];
             for (int i = 0; i < countb; i++)
                 for (int j = 0; j < x; j++) s_c[i, j] = -1;
 
@@ -89,7 +88,7 @@ namespace lab5
                     g++;
                 }
             }
-            b = new double[countb];
+            b = new double[countb + 1];
 
             for (int i = 0; i < countb; i++)
             {
@@ -106,27 +105,79 @@ namespace lab5
                 }
         }
 
+        void Calc_code_h2()
+        {
+            code_h2 = new double[k + countb + 1];
+            for (int i = 0; i < k + countb; i++)
+            {
+                code_h2[i] = code_h[i];
+                s_c[countb, i] = 1;
+                b[countb] += code_h[i];
+            }
+            if (b[countb] % 2 != 0) b[countb] = 1;
+            else b[countb] = 0;
+
+        }
+
+        void Calc_mistake()
+        {
+            mis = new double[k + countb + 1];
+            for (int i = 0; i < k + countb + 1; i++) mis[i] = code_h2[i];
+            int mis_count = rand.Next(3);
+            for (int i = 0; i < mis_count; i++)
+            {
+                int mis_ind = rand.Next(k + countb + 2);
+                if (mis[mis_ind] == 1) mis[mis_ind] = 0;
+                else mis[mis_ind] = 1;
+            }
+        }
+
         void Output_code()
         {
-            for (int i = 0; i < k; i++) richTextBox1.AppendText(code[i].ToString());
-            richTextBox1.AppendText("\n");
+            richTextBox1.Clear();
+            richTextBox2.Clear();
+            richTextBox3.Clear();
+            for (int i = 0; i < k; i++) richTextBox3.AppendText(code[i].ToString());
+            richTextBox3.AppendText(" - кодовая комбинация\n");
         }
 
         void Output_s_c()
         {
-            for (int i = 0; i < countb; i++)
+            for (int i = 0; i <= countb; i++)
             {
-                richTextBox1.AppendText("\n");
+                if (i < countb) richTextBox1.AppendText("\nS[" + (i + 1) + "] = ");
+                richTextBox2.AppendText("\nS[" + (i + 1) + "] = ");
                 for (int j = 0; j < countb + k; j++)
-                    if (s_c[i,j] != -1) richTextBox1.AppendText((j + 1).ToString() + " ");
+                {
+                    if (i < countb)
+                        if (s_c[i, j] != -1) richTextBox1.AppendText((j + 1).ToString() + " ");
+                    if (s_c[i, j] != -1) richTextBox2.AppendText((j + 1).ToString() + " ");
+                }
             }
-            richTextBox1.AppendText("\n");
+            richTextBox1.AppendText("\n\n");
+            richTextBox2.AppendText("\n\n");
+        }
+
+        void Output_b()
+        {
+            for (int i = 0; i <= countb; i++)
+            {
+                if (i < countb) richTextBox1.AppendText("\nb[" + (i + 1) + "] = " + b[i].ToString());
+                richTextBox2.AppendText("\nb[" + (i + 1) + "] = " + b[i].ToString());
+            }
+            richTextBox1.AppendText("\n\n");
+            richTextBox2.AppendText("\n\n");
         }
 
         void Output_code_h()
         {
-            for (int i = 0; i < k + countb; i++) richTextBox1.AppendText(code_h[i].ToString());
-            richTextBox1.AppendText("\n");
+            for (int i = 0; i <= k + countb; i++)
+            {
+                if (i < k + countb) richTextBox1.AppendText(code_h[i].ToString());
+                richTextBox2.AppendText(code_h2[i].ToString());
+            }
+            richTextBox1.AppendText(" - код Хэмминга для одной ошибки\n");
+            richTextBox2.AppendText(" - код Хэмминга для двух ошибок\n");
         }
 
         public Form1()
