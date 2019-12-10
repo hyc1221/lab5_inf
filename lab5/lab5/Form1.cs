@@ -120,14 +120,15 @@ namespace lab5
             }
             if (b[countb] % 2 != 0) b[countb] = 1;
             else b[countb] = 0;
-
+            code_h2[k + countb] = b[countb];
         }
 
         void Calc_mistake()
         {
             mis = new double[k + countb + 1];
             for (int i = 0; i < k + countb + 1; i++) mis[i] = code_h2[i];
-            int mis_count = rand.Next(3);
+             int mis_count = rand.Next(3);
+           // int mis_count = 2;
             for (int i = 0; i < mis_count; i++)
             {
                 int mis_ind = rand.Next(k + countb + 1);
