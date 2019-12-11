@@ -15,8 +15,8 @@ namespace lab5
 
         double[] code, code_h, code_h2, mis;
         double[] b, s;
-        double[,] s_c;
-        double[,] binary;
+        double[,] s_c; // хранит индексы для s, которые надо суммировать
+        double[,] binary; // массив, содержащий двоичные числа
         int k = 9, countb, countmis, ind_mis = -1;
         Random rand = new Random();
 
@@ -41,19 +41,19 @@ namespace lab5
             for (int i = 0; i < k; i++) code[i] = rand.Next(2);
         }
 
-        void Calc_code_h()
+        void Calc_code_h() //код хэмминга
         {
-            countb = 0;
+            countb = 0; // количество проверочных бит b
             while (Math.Pow(2, countb) < k)
             {
                 countb++;
             }
-            int x = k + countb;
-            int y = x / 2 + 1;
+            int x = k + countb; // прост чтоб много раз не писать
+            int y = x / 2 + 1; 
             code_h = new double[x];
             binary = new double[x, countb];
             int pp = 0;
-            for (int i = 0; i < x; i++)
+            for (int i = 0; i < x; i++) //генерация двоичных чисел от 0 до k + countb
             {
                 pp = i + 1;
                 for (int j = countb - 1; j >= 0; j--)
@@ -63,9 +63,9 @@ namespace lab5
                 }  
             }
 
-            s_c = new double[countb + 1, x + 1];
+            s_c = new double[countb + 1, x + 1]; //индексы для s, которые суммируются
             for (int i = 0; i <= countb; i++)
-                for (int j = 0; j <= x; j++) s_c[i, j] = -1;
+                for (int j = 0; j <= x; j++) s_c[i, j] = -1; // -1 значит этот индекс не используется
 
             for (int i = 0; i < countb; i++)
             {
@@ -73,7 +73,7 @@ namespace lab5
                 {
                     bool ok = true;
                     for (int h = 0; h < countb; h++)
-                        if (binary[Convert.ToInt32(Math.Pow(2,i)) - 1, h] == 1 && binary[j, h] == 0)
+                        if (binary[Convert.ToInt32(Math.Pow(2,i)) - 1, h] == 1 && binary[j, h] == 0) //если нужные биты из binary совпадают, то записываем индекс в s_c
                         {
                             ok = false;
                             break;
@@ -85,18 +85,18 @@ namespace lab5
             for (int i = 0; i < x; i++)
             {
                 double sum = 0;
-                for (int j = 0; j < countb; j++) sum += binary[i, j];
+                for (int j = 0; j < countb; j++) sum += binary[i, j]; // если сумма единиц равна 1, то число - степень двойки
                 if (sum != 1)
                 {
-                    code_h[i] = code[g];
+                    code_h[i] = code[g]; // заполнение кодовой комбинации в код хэмминга на нужные позиции
                     g++;
                 }
             }
-            b = new double[countb + 1];
+            b = new double[countb + 1]; // массив проверочных битов с учетом последнего бита, для проверки на две ошибки
 
             for (int i = 0; i < countb; i++)
             {
-                for (int j = 0; j < x; j++) if (s_c[i, j] == 1) b[i] += code_h[j];
+                for (int j = 0; j < x; j++) if (s_c[i, j] == 1) b[i] += code_h[j]; //вычисление проверочных бит по индексам, которые посчитали ранее
                 if (b[i] % 2 != 0) b[i] = 1;
                 else b[i] = 0;
             }
@@ -104,44 +104,44 @@ namespace lab5
             for (int i = 0; i < x; i++)
                 if (Math.Pow(2, g) == i + 1)
                 {
-                    code_h[i] = b[g];
+                    code_h[i] = b[g]; //заполнение проверочных битов в код хэмминга
                     g++;
                 }
         }
 
         void Calc_code_h2()
         {
-            code_h2 = new double[k + countb + 1];
+            code_h2 = new double[k + countb + 1]; //код хэмминга для двух ошибок
             for (int i = 0; i <= k + countb; i++)
             {
-                if (i < k + countb) code_h2[i] = code_h[i];
-                s_c[countb, i] = 1;
+                if (i < k + countb) code_h2[i] = code_h[i]; //копирование всех бит обычного кода хэмминга в новый массив
+                s_c[countb, i] = 1; // у последнего проверочного бита суммируются все биты кода хэмминга
                 if (i < k + countb) b[countb] += code_h[i];
             }
             if (b[countb] % 2 != 0) b[countb] = 1;
             else b[countb] = 0;
-            code_h2[k + countb] = b[countb];
+            code_h2[k + countb] = b[countb]; //запись последнего проверочного бита в код хэмминга
         }
 
         void Calc_mistake()
         {
-            mis = new double[k + countb + 1];
-            for (int i = 0; i < k + countb + 1; i++) mis[i] = code_h2[i];
-             int mis_count = rand.Next(3);
+            mis = new double[k + countb + 1];// код с ошибкой
+            for (int i = 0; i < k + countb + 1; i++) mis[i] = code_h2[i]; //копирование всех битов из кода хэмминга
+             int mis_count = rand.Next(3); // генерация количества ошибок от 0 до 2
            // int mis_count = 2;
             for (int i = 0; i < mis_count; i++)
             {
-                int mis_ind = rand.Next(k + countb + 1);
+                int mis_ind = rand.Next(k + countb + 1); //генерация позиции ошибки
                 if (mis[mis_ind] == 1) mis[mis_ind] = 0;
                 else mis[mis_ind] = 1;
             }
         }
 
-        void Calc_s()
+        void Calc_s() //расчет контрольной суммы
         {
-            ind_mis = 0;
-            countmis = 0;
-            s = new double[countb + 1];
+            ind_mis = 0; //предполагаемая?(хз как правильно пишется) позиция ошибки
+            countmis = 0; //предп... количество ошибок
+            s = new double[countb + 1]; //контрольная сумма
             for (int i = 0; i < countb; i++)
             {
                 for (int j = 0; j < k + countb; j++)
@@ -149,25 +149,25 @@ namespace lab5
                 if (s[i] % 2 != 0) s[i] = 1;
                 else s[i] = 0;
             }
-            for (int j = 0; j <= k + countb; j++) s[countb] += mis[j];
+            for (int j = 0; j <= k + countb; j++) s[countb] += mis[j]; //расчет последнего бита симптома
             if (s[countb] % 2 != 0) s[countb] = 1;
             else s[countb] = 0;
 
-            if (s[countb] == 0)
+            if (s[countb] == 0) //если последний бит 0, то ошибки две, либо 0
             {
                 double g = 0;
                 for (int i = 0; i < countb; i++) g += s[i];
-                if (g > 0) countmis = 2;
+                if (g > 0) countmis = 2; //если есть хоть одна единица, то две ошибки
                 else countmis = 0;
              }
-            if (s[countb] == 1)
+            if (s[countb] == 1) //если последний бит 1, то ошибка одна 
             {
                 countmis = 1;
                 for (int i = 0; i < countb; i++)
                 {
-                    ind_mis += Convert.ToInt32(s[i] * Math.Pow(2, i));
+                    ind_mis += Convert.ToInt32(s[i] * Math.Pow(2, i)); //перевод из двоичной в 10
                 }
-                if (ind_mis == 0)
+                if (ind_mis == 0) //если позиция = 0, значит ошибок нет
                 {
                     countmis = 0;
                     ind_mis = -1;
